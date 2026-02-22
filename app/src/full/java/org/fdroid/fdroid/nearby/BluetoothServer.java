@@ -86,6 +86,12 @@ public class BluetoothServer extends Thread {
                         Utils.debugLog(TAG, "Server stopped after socket accepted from client, but before initiating connection.");
                         break;
                     }
+                    String remoteDeviceName = clientSocket.getRemoteDevice().getName();
+                    if (remoteDeviceName != null && BluetoothConstants.BLOCKED_DEVICE_NAMES.contains(remoteDeviceName)) {
+                        Utils.debugLog(TAG, "Rejected connection from blocked device: " + remoteDeviceName);
+                        Utils.closeQuietly(clientSocket);
+                        continue;
+                    }
                     ClientConnection client = new ClientConnection(clientSocket, webRoot);
                     client.start();
                     clients.add(client);

@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresPermission;
 
 import org.fdroid.fdroid.R;
+import org.fdroid.fdroid.nearby.BluetoothConstants;
 
 public class BluetoothPeer implements Peer {
 
@@ -25,6 +26,7 @@ public class BluetoothPeer implements Peer {
     @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
     public static BluetoothPeer getInstance(@Nullable BluetoothDevice device) {
         if (device != null && device.getName() != null &&
+                !BluetoothConstants.BLOCKED_DEVICE_NAMES.contains(device.getName()) &&
                 (device.getBluetoothClass().getDeviceClass() == Device.COMPUTER_HANDHELD_PC_PDA
                         || device.getBluetoothClass().getDeviceClass() == Device.COMPUTER_PALM_SIZE_PC_PDA
                         || device.getBluetoothClass().getDeviceClass() == Device.PHONE_SMART)) {
