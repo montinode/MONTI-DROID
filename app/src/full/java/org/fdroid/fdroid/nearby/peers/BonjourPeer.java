@@ -7,6 +7,7 @@ import android.text.TextUtils;
 import androidx.annotation.Nullable;
 
 import org.fdroid.fdroid.FDroidApp;
+import org.fdroid.fdroid.nearby.BluetoothConstants;
 
 import javax.jmdns.ServiceInfo;
 import javax.jmdns.impl.FDroidServiceInfo;
@@ -29,8 +30,10 @@ public class BonjourPeer extends WifiPeer {
     public static BonjourPeer getInstance(ServiceInfo serviceInfo) {
         String type = serviceInfo.getPropertyString(TYPE);
         String fingerprint = serviceInfo.getPropertyString(FINGERPRINT);
+        String name = serviceInfo.getName();
         if (type == null || !type.startsWith("fdroidrepo") || FDroidApp.repo == null
-                || TextUtils.equals(FDroidApp.repo.getFingerprint(), fingerprint)) {
+                || TextUtils.equals(FDroidApp.repo.getFingerprint(), fingerprint)
+                || (name != null && BluetoothConstants.BLOCKED_DEVICE_NAMES.contains(name))) {
             return null;
         }
         return new BonjourPeer(serviceInfo);
