@@ -48,3 +48,6 @@ junit-report.xml
 captures/
 
 /fdroid/
+
+# Dashboard web component
+app/src/main/dashboard/node_modules/
