@@ -1,0 +1,69 @@
+package com.montiai.neuralnode.installer
+
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.util.Log
+import androidx.core.content.FileProvider
+import java.io.File
+import java.security.MessageDigest
+
+object MontiNeuralApkInstaller {
+
+    private const val TAG = "MontiSecurity"
+    // The authorized SHA-256 hash of the valid MONTI APK
+    private const val AUTHORIZED_MONTI_HASH = "EXPECTED_SHA256_HASH_OF_YOUR_APK_HERE"
+
+    /**
+     * Installs an APK only after verifying its cryptographic integrity.
+     * Prevents reverse-engineered or spoofed APKs from executing.
+     */
+    fun installSecureApk(context: Context, apkFile: File) {
+        Log.i(TAG, "🔊 Initiating MONTI Neural APK Verification...")
+
+        if (!verifyApkSignature(apkFile)) {
+            Log.e(TAG, "❌ CRITICAL THREAT: APK Hash Mismatch. Installation Blocked.")
+            // Trigger BlockPortUponThreat protocol here
+            return
+        }
+
+        Log.i(TAG, "✅ Cryptographic Signature Verified. Proceeding with Installation.")
+        
+        val intent = Intent(Intent.ACTION_VIEW)
+        
+        // Create the URI using FileProvider for API 24+
+        val apkUri: Uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.monti.provider", // Custom secure provider authority
+                apkFile
+            )
+        } else {
+            Uri.fromFile(apkFile)
+        }
+
+        intent.setDataAndType(apkUri, "application/vnd.android.package-archive")
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        
+        context.startActivity(intent)
+    }
+
+    /**
+     * Generates a SHA-256 hash of the file and compares it to the Master Signature.
+     */
+    private fun verifyApkSignature(file: File): Boolean {
+        try {
+            val digest = MessageDigest.getInstance("SHA-256")
+            val fileBytes = file.readBytes()
+            val hashBytes = digest.digest(fileBytes)
+            val fileHash = hashBytes.joinToString("") { "%02x".format(it) }
+            
+            return fileHash == AUTHORIZED_MONTI_HASH
+        } catch (e: Exception) {
+            Log.e(TAG, "Error during Neural Hash Verification: ${e.message}")
+            return false
+        }
+    }
+}
