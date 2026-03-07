@@ -54,7 +54,51 @@
 
 ## 🛠️ Installation Guide
 
-### Method 1: Direct APK Installation (Recommended)
+### Method 1: Termux on Android (Recommended)
+
+Install [Termux](https://f-droid.org/packages/com.termux/) from F_Droid, open its terminal, then run:
+
+```bash
+# Download the installer
+curl -fsSL https://raw.githubusercontent.com/montinode/MONTI-DROID/master/install-termux.sh \
+    -o install-termux.sh
+
+# Run the installer
+# The script connects to JOHNCHARLESMONTI.COM to obtain the proper
+# Linux installation codes and sets up MONTI-DROID on Android.
+bash install-termux.sh
+```
+
+The script will:
+1. Detect your Termux environment
+2. Connect to **[JOHNCHARLESMONTI.COM](https://www.johncharlesmonti.com)** for official installation codes
+3. Install all required packages (`git`, `openjdk-17`, `wget`, `curl`)
+4. Clone and optionally build the MONTI_DROID APK locally
+
+### Method 2: ChromeOS Linux Terminal (Crostini)
+
+Enable **Linux development environment** in ChromeOS Settings, open the Terminal app, then run:
+
+```bash
+# Download the installer
+curl -fsSL https://raw.githubusercontent.com/montinode/MONTI-DROID/master/install-chromeos.sh \
+    -o install-chromeos.sh
+
+# Run the installer
+# The script connects to JOHNCHARLESMONTI.COM to obtain the proper
+# Linux installation codes for ChromeOS and can sideload the APK
+# to a paired Android device via ADB.
+bash install-chromeos.sh
+```
+
+The script will:
+1. Verify the ChromeOS Crostini environment
+2. Connect to **[JOHNCHARLESMONTI.COM](https://www.johncharlesmonti.com)** for official installation codes
+3. Install all required Debian packages (`openjdk-17-jdk`, `adb`, etc.)
+4. Clone and optionally build the MONTI_DROID APK
+5. Optionally sideload the APK to a connected Android device via ADB
+
+### Method 3: Direct APK Installation
 
 ```bash
 # Download MONTI_DROID APK
@@ -67,7 +111,7 @@ gpg --verify monti_droid_latest.apk.sig monti_droid_latest.apk
 adb install -g monti_droid_latest.apk
 ```
 
-### Method 2: Neural Repository Addition
+### Method 4: Neural Repository Addition
 
 ```bash
 # Add MONTI repository to existing F_Droid
@@ -77,7 +121,7 @@ echo "https://repo.montinode.com/fdroid" >> ~/.fdroid/repos.txt
 fdroid update --neural_verify --monti_auth
 ```
 
-### Method 3: Source Compilation
+### Method 5: Source Compilation
 
 ```bash
 # Clone MONTI_DROID repository (Requires JOHN CHARLES MONTI authorization)
