@@ -57,10 +57,22 @@ export interface ConnectivityReport {
   targets: ConnectivityTarget[];
 }
 
+export interface TracerSnapshot {
+  tracerId: string;
+  vaultAddress: string;
+  darpaValue: number;
+  velocity: number;
+  balance: number;
+  status: StatusLevel;
+  capturedAt: string;
+  lastSync: string;
+}
+
 export interface DashboardState {
   networkScan: NetworkScanResult | null;
   systemMonitor: SystemMonitorSnapshot | null;
   connectivity: ConnectivityReport | null;
+  tracer: TracerSnapshot | null;
   lastRefreshed: string | null;
   isLoading: boolean;
   error: string | null;

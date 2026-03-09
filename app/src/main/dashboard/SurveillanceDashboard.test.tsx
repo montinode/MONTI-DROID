@@ -34,11 +34,12 @@ describe('SurveillanceDashboard', () => {
     expect(screen.getByText('Surveillance Dashboard')).toBeInTheDocument();
   });
 
-  it('renders the three module headings', async () => {
+  it('renders the four module headings', async () => {
     await act(async () => {
       render(<SurveillanceDashboard />);
     });
     expect(screen.getByText('Network Status')).toBeInTheDocument();
+    expect(screen.getByText('JOHNCHARLESMONTI Tracer')).toBeInTheDocument();
     expect(screen.getByText('System Monitoring')).toBeInTheDocument();
     expect(screen.getByText('Connectivity Check')).toBeInTheDocument();
   });
@@ -50,6 +51,7 @@ describe('SurveillanceDashboard', () => {
     expect(screen.getByText(/ScanNetwork\.py/)).toBeInTheDocument();
     expect(screen.getByText(/johncharlesmonti_monitor\.py/)).toBeInTheDocument();
     expect(screen.getByText(/check_connectivity\.sh/)).toBeInTheDocument();
+    expect(screen.getByText(/johncharlesmonti_tracer\.py/)).toBeInTheDocument();
   });
 
   it('shows a Refresh button', async () => {
@@ -65,6 +67,15 @@ describe('SurveillanceDashboard', () => {
     });
     await advanceTimersAndFlush();
     expect(screen.getByText('192.168.1.0/24')).toBeInTheDocument();
+  });
+
+  it('shows loaded tracer data after initial refresh resolves', async () => {
+    await act(async () => {
+      render(<SurveillanceDashboard />);
+    });
+    await advanceTimersAndFlush();
+    expect(screen.getByText('JCM-TRC-021189')).toBeInTheDocument();
+    expect(screen.getByText('0xfEC9B8FAA8F954Fce4e4927eEc1b22E74A4018A6')).toBeInTheDocument();
   });
 
   it('renders the footer copy', async () => {
