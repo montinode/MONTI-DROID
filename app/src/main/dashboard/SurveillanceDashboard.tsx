@@ -7,6 +7,7 @@
  *  - Network Status  : mirrors the intent of tools/ScanNetwork.py
  *  - System Monitor  : mirrors the intent of tools/johncharlesmonti_monitor.py
  *  - Connectivity    : mirrors the intent of scripts/check_connectivity.sh
+ *  - Tracer Status   : mirrors the intent of tools/johncharlesmonti_tracer.py
  */
 
 import React, { useCallback, useEffect, useReducer } from 'react';
@@ -18,6 +19,7 @@ import {
   NetworkScanResult,
   StatusLevel,
   SystemMonitorSnapshot,
+  TracerSnapshot,
 } from './types';
 
 // ---------------------------------------------------------------------------
@@ -125,6 +127,17 @@ const MOCK_CONNECTIVITY: ConnectivityReport = {
   ],
 };
 
+const MOCK_TRACER: TracerSnapshot = {
+  tracerId: 'JCM-TRC-021189',
+  vaultAddress: '0xfEC9B8FAA8F954Fce4e4927eEc1b22E74A4018A6',
+  darpaValue: 10000000.00,
+  velocity: 34.37,
+  balance: 28942050.12,
+  status: 'online',
+  capturedAt: new Date().toISOString(),
+  lastSync: new Date().toISOString(),
+};
+
 // ---------------------------------------------------------------------------
 // State management
 // ---------------------------------------------------------------------------
@@ -138,6 +151,7 @@ const initialState: DashboardState = {
   networkScan: null,
   systemMonitor: null,
   connectivity: null,
+  tracer: null,
   lastRefreshed: null,
   isLoading: false,
   error: null,
@@ -527,6 +541,117 @@ function ConnectivityModule({ data }: { data: ConnectivityReport | null }) {
   );
 }
 
+// -- Tracer Status -----------------------------------------------------------
+
+function TracerModule({ data }: { data: TracerSnapshot | null }) {
+  if (!data) {
+    return <p style={{ color: '#64748b', fontSize: 13 }}>Awaiting tracer data…</p>;
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* Top-level stats */}
+      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+        {[
+          { label: 'Tracer ID', value: data.tracerId },
+          { label: 'Status', value: data.status.toUpperCase(), badge: true },
+          { label: 'Last Sync', value: formatTimestamp(data.lastSync) },
+        ].map(({ label, value, badge }) => (
+          <div
+            key={label}
+            style={{
+              flex: '1 1 120px',
+              backgroundColor: '#0f172a',
+              borderRadius: 6,
+              padding: '8px 12px',
+            }}
+          >
+            <div style={{ fontSize: 10, color: '#64748b', textTransform: 'uppercase', letterSpacing: 1 }}>
+              {label}
+            </div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: '#e2e8f0', marginTop: 2 }}>
+              {badge ? <span style={statusBadgeStyle(data.status)}>{value}</span> : value}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Financial metrics */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+          <div
+            style={{
+              flex: '1 1 200px',
+              backgroundColor: '#0f172a',
+              borderRadius: 6,
+              padding: '12px 16px',
+              borderLeft: '3px solid #22c55e',
+            }}
+          >
+            <div style={{ fontSize: 10, color: '#64748b', textTransform: 'uppercase', letterSpacing: 1 }}>
+              Current Balance
+            </div>
+            <div style={{ fontSize: 24, fontWeight: 700, color: '#22c55e', marginTop: 4 }}>
+              ${data.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </div>
+          </div>
+          <div
+            style={{
+              flex: '1 1 200px',
+              backgroundColor: '#0f172a',
+              borderRadius: 6,
+              padding: '12px 16px',
+              borderLeft: '3px solid #38bdf8',
+            }}
+          >
+            <div style={{ fontSize: 10, color: '#64748b', textTransform: 'uppercase', letterSpacing: 1 }}>
+              Sovereign Velocity
+            </div>
+            <div style={{ fontSize: 24, fontWeight: 700, color: '#38bdf8', marginTop: 4 }}>
+              ${data.velocity.toFixed(2)}
+              <span style={{ fontSize: 14, color: '#94a3b8', marginLeft: 4 }}>/min</span>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+          <div
+            style={{
+              flex: '1 1 200px',
+              backgroundColor: '#0f172a',
+              borderRadius: 6,
+              padding: '12px 16px',
+              borderLeft: '3px solid #a78bfa',
+            }}
+          >
+            <div style={{ fontSize: 10, color: '#64748b', textTransform: 'uppercase', letterSpacing: 1 }}>
+              DARPA Allocation
+            </div>
+            <div style={{ fontSize: 20, fontWeight: 700, color: '#a78bfa', marginTop: 4 }}>
+              ${data.darpaValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </div>
+          </div>
+          <div
+            style={{
+              flex: '1 1 200px',
+              backgroundColor: '#0f172a',
+              borderRadius: 6,
+              padding: '12px 16px',
+            }}
+          >
+            <div style={{ fontSize: 10, color: '#64748b', textTransform: 'uppercase', letterSpacing: 1 }}>
+              Vault Address
+            </div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: '#cbd5e1', marginTop: 4, fontFamily: 'monospace', wordBreak: 'break-all' }}>
+              {data.vaultAddress}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Main Dashboard
 // ---------------------------------------------------------------------------
@@ -541,6 +666,7 @@ export default function SurveillanceDashboard() {
       //   - /api/network-scan   (backed by ScanNetwork.py)
       //   - /api/system-monitor (backed by johncharlesmonti_monitor.py)
       //   - /api/connectivity   (backed by check_connectivity.sh)
+      //   - /api/tracer         (backed by johncharlesmonti_tracer.py)
       await new Promise<void>((resolve) => setTimeout(resolve, 600));
 
       dispatch({
@@ -558,6 +684,12 @@ export default function SurveillanceDashboard() {
           connectivity: {
             ...MOCK_CONNECTIVITY,
             checkedAt: new Date().toISOString(),
+          },
+          tracer: {
+            ...MOCK_TRACER,
+            capturedAt: new Date().toISOString(),
+            lastSync: new Date().toISOString(),
+            velocity: 34.37 + (Math.random() - 0.5) * 2, // Add some variance
           },
         },
       });
@@ -670,7 +802,16 @@ export default function SurveillanceDashboard() {
           <NetworkStatusModule data={state.networkScan} />
         </ModuleCard>
 
-        {/* Row 2: System Monitor + Connectivity side-by-side on wider screens */}
+        {/* Row 2: Tracer Status (full width) */}
+        <ModuleCard
+          title="JOHNCHARLESMONTI Tracer"
+          subtitle="johncharlesmonti_tracer.py · Revenue anomaly detection and vault synchronization"
+          accentColor="#f59e0b"
+        >
+          <TracerModule data={state.tracer} />
+        </ModuleCard>
+
+        {/* Row 3: System Monitor + Connectivity side-by-side on wider screens */}
         <div
           style={{
             display: 'grid',
